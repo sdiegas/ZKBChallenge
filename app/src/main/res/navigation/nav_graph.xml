@@ -7,7 +7,7 @@
 
     <fragment
         android:id="@+id/registrationFragment"
-        android:name="com.sdiegas.zkbchallenge.RegistrationFragment"
+        android:name="com.sdiegas.zkbchallenge.ui.RegistrationFragment"
         android:label="fragment_registration"
         tools:layout="@layout/fragment_registration" >
         <action
