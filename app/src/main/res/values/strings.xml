@@ -2,4 +2,12 @@
     <string name="app_name">ZKB Challenge</string>
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="registration_header">Registration</string>
+    <string name="registration_name_hint">Name</string>
+    <string name="registration_email_hint">E-Mail</string>
+    <string name="registration_birthday_hint">Birthday</string>
+    <string name="registration_image_content_description">Calendar Image</string>
+    <string name="registration_register_button">Register</string>
+
+    <string name="confirmation_header">Confirmation</string>
 </resources>
