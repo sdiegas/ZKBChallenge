@@ -1,5 +1,6 @@
 package com.sdiegas.zkbchallenge.di
 
+import com.sdiegas.zkbchallenge.domain.use_cases.ValidateBirthday
 import com.sdiegas.zkbchallenge.domain.use_cases.ValidateEmail
 import com.sdiegas.zkbchallenge.domain.use_cases.ValidateName
 import dagger.Module
@@ -21,5 +22,10 @@ object UseCasesModule {
     @Singleton
     fun provideValidateNamelUseCase(): ValidateName =
         ValidateName()
+
+    @Provides
+    @Singleton
+    fun provideValidateBirthDayUseCase(): ValidateBirthday =
+        ValidateBirthday()
 
 }

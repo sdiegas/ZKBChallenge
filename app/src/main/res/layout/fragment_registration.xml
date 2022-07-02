@@ -40,7 +40,6 @@
                 android:layout_marginTop="64dp"
                 app:errorEnabled="@{registrationViewModel.state.nameError != null ? true : false}"
                 app:errorText="@{registrationViewModel.state.nameError}"
-                app:errorContentDescription="@{registrationViewModel.state.nameError}"
                 app:layout_constraintEnd_toEndOf="@+id/textView"
                 app:layout_constraintStart_toStartOf="@+id/textView"
                 app:layout_constraintTop_toBottomOf="@+id/textView">
@@ -62,7 +61,6 @@
                 android:layout_marginTop="24dp"
                 app:errorEnabled="@{registrationViewModel.state.emailError != null ? true : false}"
                 app:errorText="@{registrationViewModel.state.emailError}"
-                app:errorContentDescription="@{registrationViewModel.state.emailError}"
                 app:layout_constraintEnd_toEndOf="@+id/textView"
                 app:layout_constraintStart_toStartOf="@+id/textView"
                 app:layout_constraintTop_toBottomOf="@+id/textInputLayout">
@@ -82,20 +80,22 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="24dp"
+                android:layout_marginEnd="16dp"
+                android:enabled="false"
+                android:focusable="false"
                 app:errorEnabled="@{registrationViewModel.state.birthdayDateError != null ? true : false}"
                 app:errorText="@{registrationViewModel.state.birthdayDateError}"
-                app:errorContentDescription="@{registrationViewModel.state.birthdayDateError}"
-                app:layout_constraintEnd_toEndOf="@+id/textView"
+                app:layout_constraintEnd_toStartOf="@+id/imageView"
                 app:layout_constraintStart_toStartOf="@+id/textView"
                 app:layout_constraintTop_toBottomOf="@+id/textInputLayout2">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="@{registrationViewModel.state.birthdayDate.toString()}"
                     android:hint="@string/registration_birthday_hint"
                     android:inputType="date"
-                    android:maxLines="1" />
+                    android:maxLines="1"
+                    android:text="@{registrationViewModel.state.birthdayDate.toString()}" />
             </com.google.android.material.textfield.TextInputLayout>
 
             <Button
@@ -109,6 +109,15 @@
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="@+id/textInputLayout2"
                 app:layout_constraintStart_toStartOf="@+id/textView" />
+
+            <ImageView
+                android:id="@+id/imageView"
+                android:layout_width="56dp"
+                android:layout_height="56dp"
+                android:src="@drawable/calendar"
+                app:layout_constraintEnd_toEndOf="@+id/textView"
+                app:layout_constraintTop_toTopOf="@+id/textInputLayout3"
+                android:contentDescription="@string/registration_image_content_description" />
         </androidx.constraintlayout.widget.ConstraintLayout>
 
     </ScrollView>

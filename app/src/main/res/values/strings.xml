@@ -6,6 +6,7 @@
     <string name="registration_name_hint">Name</string>
     <string name="registration_email_hint">E-Mail</string>
     <string name="registration_birthday_hint">Birthday</string>
+    <string name="registration_image_content_description">Calendar Image</string>
     <string name="registration_register_button">Register</string>
 
     <string name="confirmation_header">Confirmation</string>
