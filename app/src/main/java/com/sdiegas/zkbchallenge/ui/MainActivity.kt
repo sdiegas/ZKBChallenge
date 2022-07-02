@@ -1,7 +1,8 @@
-package com.sdiegas.zkbchallenge
+package com.sdiegas.zkbchallenge.ui
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import com.sdiegas.zkbchallenge.R
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint

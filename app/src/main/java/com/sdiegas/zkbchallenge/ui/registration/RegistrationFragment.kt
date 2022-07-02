@@ -1,4 +1,4 @@
-package com.sdiegas.zkbchallenge.ui
+package com.sdiegas.zkbchallenge.ui.registration
 
 import android.app.DatePickerDialog
 import android.os.Bundle
@@ -10,8 +10,7 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.findNavController
 import com.sdiegas.zkbchallenge.databinding.FragmentRegistrationBinding
-import com.sdiegas.zkbchallenge.util.maxLocalDateTime
-import com.sdiegas.zkbchallenge.util.minLocalDateTime
+import com.sdiegas.zkbchallenge.util.Constants
 import com.sdiegas.zkbchallenge.util.mutation
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
@@ -64,8 +63,8 @@ class RegistrationFragment : Fragment() {
             registrationViewModel.state.value?.birthdayDate?.let {
                 datePickerDialog.updateDate(it.year, it.month.value, it.dayOfMonth)
             }
-            datePickerDialog.datePicker.maxDate = maxLocalDateTime.atZone(ZoneId.of("Europe/Zurich")).toInstant().toEpochMilli()
-            datePickerDialog.datePicker.minDate = minLocalDateTime.atZone(ZoneId.of("Europe/Zurich")).toInstant().toEpochMilli()
+            datePickerDialog.datePicker.maxDate = Constants.LocalDateTimes.maxLocalDateTime.atZone(ZoneId.of("Europe/Zurich")).toInstant().toEpochMilli()
+            datePickerDialog.datePicker.minDate = Constants.LocalDateTimes.minLocalDateTime.atZone(ZoneId.of("Europe/Zurich")).toInstant().toEpochMilli()
             datePickerDialog.setOnDateSetListener { _, year, month, dayOfMonth ->
                 registrationViewModel.state.mutation {
                     it.value?.birthdayDate = LocalDateTime.of(year, month, dayOfMonth, 0, 0)

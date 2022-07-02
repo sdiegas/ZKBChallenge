@@ -1,20 +1,21 @@
 package com.sdiegas.zkbchallenge.domain.use_cases
 
-import android.util.Patterns
+import com.sdiegas.zkbchallenge.util.Constants
 
 class ValidateEmail {
+    private val emailPattern = "[a-zA-Z0-9._-]+@[a-z]+\\.+[a-z]+".toRegex()
 
     fun execute(email: String): ValidationResult {
         if (email.isBlank()) {
             return ValidationResult(
                 successful = false,
-                errorMessage = "The email can't be blank"
+                errorMessage = Constants.ErrorMessages.validateEmailErrorEmpty
             )
         }
-        if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+        if (!email.matches(emailPattern)) {
             return ValidationResult(
                 successful = false,
-                errorMessage = "The email is not valid"
+                errorMessage = Constants.ErrorMessages.validateEmailErrorInvalid
             )
         }
         return ValidationResult(

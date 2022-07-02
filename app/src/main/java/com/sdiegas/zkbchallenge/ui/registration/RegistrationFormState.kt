@@ -1,4 +1,4 @@
-package com.sdiegas.zkbchallenge.ui
+package com.sdiegas.zkbchallenge.ui.registration
 
 import java.time.LocalDateTime
 
