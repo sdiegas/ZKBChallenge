@@ -10,4 +10,8 @@
     <string name="registration_register_button">Register</string>
 
     <string name="confirmation_header">Confirmation</string>
+    <string name="confirmation_text">Danke für die Registrierung</string>
+    <string name="confirmation_textview_name_format">Name: %1$s</string>"
+    <string name="confirmation_textview_email_format">E-Mail: %1$s</string>"
+    <string name="confirmation_textview_birthday_format">Birthday: %1$s</string>"
 </resources>
