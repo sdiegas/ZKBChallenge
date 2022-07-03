@@ -41,20 +41,7 @@ class RegistrationFragment : Fragment() {
 
         _binding?.lifecycleOwner = viewLifecycleOwner
 
-        viewLifecycleOwner.lifecycleScope.launch {
-            registrationViewModel.validationEvents.collect { event ->
-                when(event) {
-                    is RegistrationViewModel.ValidationEvent.Success -> {
-                        val action =
-                            RegistrationFragmentDirections.actionRegistrationFragmentToConfirmationFragment(
-                                registrationViewModel.state.value?.toConfirmationViewState()
-                            )
-                        registrationViewModel.resetViewState()
-                        view?.findNavController()?.navigate(action )
-                    }
-                }
-            }
-        }
+        setValidationEventListener()
 
         return  binding.root
     }
@@ -62,19 +49,50 @@ class RegistrationFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        setCalendarImageClickListener()
+    }
+
+    private fun setCalendarImageClickListener() {
         binding.imageView.setOnClickListener {
-            val datePickerDialog = DatePickerDialog(requireContext())
-            registrationViewModel.state.value?.birthdayDate?.let {
-                datePickerDialog.updateDate(it.year, it.month.value, it.dayOfMonth)
-            }
-            datePickerDialog.datePicker.maxDate = Constants.LocalDateTimes.maxLocalDateTime.atZone(ZoneId.of("Europe/Zurich")).toInstant().toEpochMilli()
-            datePickerDialog.datePicker.minDate = Constants.LocalDateTimes.minLocalDateTime.atZone(ZoneId.of("Europe/Zurich")).toInstant().toEpochMilli()
-            datePickerDialog.setOnDateSetListener { _, year, month, dayOfMonth ->
-                registrationViewModel.state.mutation {
-                    it.value?.birthdayDate = LocalDateTime.of(year, month+1, dayOfMonth, 0, 0)
-                }
-            }
-            datePickerDialog.show()
+            showDatePickerDialog()
         }
     }
+
+    private fun showDatePickerDialog() {
+        val datePickerDialog = DatePickerDialog(requireContext())
+        registrationViewModel.state.value?.birthdayDate?.let {
+            datePickerDialog.updateDate(it.year, it.month.value, it.dayOfMonth)
+        }
+        datePickerDialog.datePicker.maxDate =
+            Constants.LocalDateTimes.maxLocalDateTime.atZone(ZoneId.of("Europe/Zurich"))
+                .toInstant().toEpochMilli()
+        datePickerDialog.datePicker.minDate =
+            Constants.LocalDateTimes.minLocalDateTime.atZone(ZoneId.of("Europe/Zurich"))
+                .toInstant().toEpochMilli()
+        datePickerDialog.setOnDateSetListener { _, year, month, dayOfMonth ->
+            registrationViewModel.state.mutation {
+                it.value?.birthdayDate = LocalDateTime.of(year, month + 1, dayOfMonth, 0, 0)
+            }
+        }
+        datePickerDialog.show()
+    }
+
+    private fun setValidationEventListener() {
+        viewLifecycleOwner.lifecycleScope.launch {
+            registrationViewModel.validationEvents.collect { event ->
+                when (event) {
+                    is RegistrationViewModel.ValidationEvent.Success -> {
+                        val action =
+                            RegistrationFragmentDirections.actionRegistrationFragmentToConfirmationFragment(
+                                registrationViewModel.state.value?.toConfirmationViewState()
+                            )
+                        registrationViewModel.resetData()
+                        view?.findNavController()?.navigate(action)
+                    }
+                }
+            }
+        }
+    }
+
+
 }

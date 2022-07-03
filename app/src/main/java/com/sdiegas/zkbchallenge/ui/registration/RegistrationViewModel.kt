@@ -30,12 +30,7 @@ class RegistrationViewModel @Inject constructor(
     val validationEvents = validationEventChannel.receiveAsFlow()
 
     init {
-        state.mutation {
-           persistRegistrationData.load()?.let { registrationData ->
-                it.value?.name = registrationData.name
-                it.value?.email = registrationData.email
-            }
-        }
+        loadPersistedData()
     }
 
     fun validate() {
@@ -66,8 +61,17 @@ class RegistrationViewModel @Inject constructor(
         }
     }
 
-    fun resetViewState() {
+    fun resetData() {
         state.postValue(RegistrationFormState())
+    }
+
+    private fun loadPersistedData() {
+        state.mutation {
+            persistRegistrationData.load()?.let { registrationData ->
+                it.value?.name = registrationData.name
+                it.value?.email = registrationData.email
+            }
+        }
     }
 
     sealed class ValidationEvent {
