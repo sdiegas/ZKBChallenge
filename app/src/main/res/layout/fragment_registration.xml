@@ -85,6 +85,7 @@
                 android:focusable="false"
                 app:errorEnabled="@{registrationViewModel.state.birthdayDateError != null ? true : false}"
                 app:errorText="@{registrationViewModel.state.birthdayDateError}"
+                app:localDateTime="@{registrationViewModel.state.birthdayDate}"
                 app:layout_constraintEnd_toStartOf="@+id/imageView"
                 app:layout_constraintStart_toStartOf="@+id/textView"
                 app:layout_constraintTop_toBottomOf="@+id/textInputLayout2">
@@ -94,8 +95,7 @@
                     android:layout_height="wrap_content"
                     android:hint="@string/registration_birthday_hint"
                     android:inputType="date"
-                    android:maxLines="1"
-                    android:text="@{registrationViewModel.state.birthdayDate.toString()}" />
+                    android:maxLines="1" />
             </com.google.android.material.textfield.TextInputLayout>
 
             <Button

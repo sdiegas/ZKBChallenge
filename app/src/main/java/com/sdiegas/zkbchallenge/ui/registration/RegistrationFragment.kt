@@ -12,6 +12,7 @@ import androidx.navigation.findNavController
 import com.sdiegas.zkbchallenge.databinding.FragmentRegistrationBinding
 import com.sdiegas.zkbchallenge.util.Constants
 import com.sdiegas.zkbchallenge.util.mutation
+import com.sdiegas.zkbchallenge.util.toConfirmationViewState
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import java.time.LocalDateTime
@@ -45,8 +46,10 @@ class RegistrationFragment : Fragment() {
                 when(event) {
                     is RegistrationViewModel.ValidationEvent.Success -> {
                         val action =
-                            RegistrationFragmentDirections.actionRegistrationFragmentToConfirmationFragment()
-                        view?.findNavController()?.navigate(action)
+                            RegistrationFragmentDirections.actionRegistrationFragmentToConfirmationFragment(
+                                registrationViewModel.state.value?.toConfirmationViewState()
+                            )
+                        view?.findNavController()?.navigate(action )
                     }
                 }
             }
@@ -67,7 +70,7 @@ class RegistrationFragment : Fragment() {
             datePickerDialog.datePicker.minDate = Constants.LocalDateTimes.minLocalDateTime.atZone(ZoneId.of("Europe/Zurich")).toInstant().toEpochMilli()
             datePickerDialog.setOnDateSetListener { _, year, month, dayOfMonth ->
                 registrationViewModel.state.mutation {
-                    it.value?.birthdayDate = LocalDateTime.of(year, month, dayOfMonth, 0, 0)
+                    it.value?.birthdayDate = LocalDateTime.of(year, month+1, dayOfMonth, 0, 0)
                 }
             }
             datePickerDialog.show()

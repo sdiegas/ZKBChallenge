@@ -18,5 +18,10 @@
         android:id="@+id/confirmationFragment"
         android:name="com.sdiegas.zkbchallenge.ui.confirmation.ConfirmationFragment"
         android:label="fragment_confirmation"
-        tools:layout="@layout/fragment_confirmation" />
+        tools:layout="@layout/fragment_confirmation" >
+        <argument
+            android:name="confirmationViewState"
+            app:argType="com.sdiegas.zkbchallenge.ui.confirmation.ConfirmationViewState"
+            app:nullable="true" />
+    </fragment>
 </navigation>
