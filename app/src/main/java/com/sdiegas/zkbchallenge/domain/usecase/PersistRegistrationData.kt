@@ -12,7 +12,7 @@ class PersistRegistrationData @Inject constructor(
         registrationDataStore.setRegistrationData(registrationData)
     }
 
-    fun load(): RegistrationData {
+    fun load(): RegistrationData? {
         return registrationDataStore.getRegistrationData()
     }
 }

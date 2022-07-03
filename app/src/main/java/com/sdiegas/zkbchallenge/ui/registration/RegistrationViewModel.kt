@@ -29,6 +29,9 @@ class RegistrationViewModel @Inject constructor(
     private val validationEventChannel = Channel<ValidationEvent>()
     val validationEvents = validationEventChannel.receiveAsFlow()
 
+    init {
+        loadPersistedData()
+    }
 
     fun validate() {
         state.value?.let { viewState ->
@@ -54,6 +57,19 @@ class RegistrationViewModel @Inject constructor(
                 localDateTimeFormatter)))
             viewModelScope.launch {
                 validationEventChannel.send(ValidationEvent.Success)
+            }
+        }
+    }
+
+    fun resetData() {
+        state.postValue(RegistrationFormState())
+    }
+
+    private fun loadPersistedData() {
+        state.mutation {
+            persistRegistrationData.load()?.let { registrationData ->
+                it.value?.name = registrationData.name
+                it.value?.email = registrationData.email
             }
         }
     }
