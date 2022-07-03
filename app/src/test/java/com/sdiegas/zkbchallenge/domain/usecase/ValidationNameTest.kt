@@ -1,4 +1,4 @@
-package com.sdiegas.zkbchallenge.domain.use_cases
+package com.sdiegas.zkbchallenge.domain.usecase
 
 import org.junit.Assert
 import org.junit.Test

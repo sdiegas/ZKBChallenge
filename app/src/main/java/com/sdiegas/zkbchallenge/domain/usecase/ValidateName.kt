@@ -1,5 +1,6 @@
-package com.sdiegas.zkbchallenge.domain.use_cases
+package com.sdiegas.zkbchallenge.domain.usecase
 
+import com.sdiegas.zkbchallenge.domain.entity.ValidationResult
 import com.sdiegas.zkbchallenge.util.Constants
 
 class ValidateName {

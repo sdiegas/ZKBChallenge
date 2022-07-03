@@ -2,17 +2,21 @@ package com.sdiegas.zkbchallenge.ui.registration
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import com.sdiegas.zkbchallenge.MainDispatcherRule
-import com.sdiegas.zkbchallenge.domain.use_cases.ValidateBirthday
-import com.sdiegas.zkbchallenge.domain.use_cases.ValidateEmail
-import com.sdiegas.zkbchallenge.domain.use_cases.ValidateName
-import com.sdiegas.zkbchallenge.domain.use_cases.ValidationResult
+import com.sdiegas.zkbchallenge.data.local.RegistrationData
+import com.sdiegas.zkbchallenge.domain.usecase.ValidateBirthday
+import com.sdiegas.zkbchallenge.domain.usecase.ValidateEmail
+import com.sdiegas.zkbchallenge.domain.usecase.ValidateName
+import com.sdiegas.zkbchallenge.domain.entity.ValidationResult
+import com.sdiegas.zkbchallenge.domain.usecase.PersistRegistrationData
 import com.sdiegas.zkbchallenge.getOrAwaitValue
 import com.sdiegas.zkbchallenge.util.Constants
+import com.sdiegas.zkbchallenge.util.localDateTimeFormatter
 import com.sdiegas.zkbchallenge.util.mutation
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import org.junit.Assert
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Before
@@ -25,6 +29,7 @@ class RegistrationViewModelTest {
     private lateinit var validateNameUseCase: ValidateName
     private lateinit var validateEmailUseCase: ValidateEmail
     private lateinit var validateBirthdayUseCase: ValidateBirthday
+    private lateinit var persistRegistrationDataUseCase: PersistRegistrationData
     private lateinit var viewModel: RegistrationViewModel
 
     private val testNameValid = "Stefan"
@@ -34,6 +39,8 @@ class RegistrationViewModelTest {
     private val testEmailInvalid = "stefan@"
     private val testBirthdayValid = LocalDateTime.of(1993, Month.JUNE, 6, 9, 30)
     private val testBirthdayInvalid = LocalDateTime.now()
+    private val testRegistrationData = RegistrationData(name = testNameValid, email = testEmailValid, birthday = testBirthdayValid.format(
+        localDateTimeFormatter))
 
     @ExperimentalCoroutinesApi
     @get:Rule
@@ -47,7 +54,8 @@ class RegistrationViewModelTest {
         validateNameUseCase = mockk()
         validateEmailUseCase = mockk()
         validateBirthdayUseCase = mockk()
-        viewModel = RegistrationViewModel(validateNameUseCase, validateEmailUseCase, validateBirthdayUseCase)
+        persistRegistrationDataUseCase = mockk()
+        viewModel = RegistrationViewModel(validateNameUseCase, validateEmailUseCase, validateBirthdayUseCase, persistRegistrationDataUseCase)
     }
 
     @Test
@@ -189,6 +197,7 @@ class RegistrationViewModelTest {
         every { validateNameUseCase.execute(any()) } returns ValidationResult(true)
         every { validateEmailUseCase.execute(any()) } returns ValidationResult(true)
         every { validateBirthdayUseCase.execute(testBirthdayValid) } returns ValidationResult(true)
+        every { persistRegistrationDataUseCase.save(testRegistrationData) } returns Unit
         //When
         viewModel.state.mutation {
             it.value?.name = testNameValid
@@ -204,4 +213,30 @@ class RegistrationViewModelTest {
         assertNull(viewModel.state.getOrAwaitValue().emailError)
         assertNull(viewModel.state.getOrAwaitValue().birthdayDateError)
     }
+
+    @Test
+    fun test_PersistRegistrationData_OnEverythingOK_LiveDataChanged() {
+        //Given
+        every { validateNameUseCase.execute(any()) } returns ValidationResult(true)
+        every { validateEmailUseCase.execute(any()) } returns ValidationResult(true)
+        every { validateBirthdayUseCase.execute(testBirthdayValid) } returns ValidationResult(true)
+        every { persistRegistrationDataUseCase.save(testRegistrationData) } returns Unit
+        //When
+        viewModel.state.mutation {
+            it.value?.name = testNameValid
+            it.value?.email = testEmailValid
+            it.value?.birthdayDate = testBirthdayValid
+        }
+        viewModel.validate()
+        //Then
+        verify { validateNameUseCase.execute(any()) }
+        verify { validateEmailUseCase.execute(any()) }
+        verify { validateBirthdayUseCase.execute(any()) }
+        verify { persistRegistrationDataUseCase.save(testRegistrationData) }
+        assertNull(viewModel.state.getOrAwaitValue().nameError)
+        assertNull(viewModel.state.getOrAwaitValue().emailError)
+        assertNull(viewModel.state.getOrAwaitValue().birthdayDateError)
+    }
+
+
 }
