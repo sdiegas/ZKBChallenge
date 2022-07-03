@@ -49,6 +49,7 @@ class RegistrationFragment : Fragment() {
                             RegistrationFragmentDirections.actionRegistrationFragmentToConfirmationFragment(
                                 registrationViewModel.state.value?.toConfirmationViewState()
                             )
+                        registrationViewModel.resetViewState()
                         view?.findNavController()?.navigate(action )
                     }
                 }

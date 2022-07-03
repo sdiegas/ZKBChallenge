@@ -29,7 +29,6 @@ class RegistrationViewModel @Inject constructor(
     private val validationEventChannel = Channel<ValidationEvent>()
     val validationEvents = validationEventChannel.receiveAsFlow()
 
-
     fun validate() {
         state.value?.let { viewState ->
             val nameResult = validateNameUseCase.execute(viewState.name)
@@ -56,6 +55,10 @@ class RegistrationViewModel @Inject constructor(
                 validationEventChannel.send(ValidationEvent.Success)
             }
         }
+    }
+
+    fun resetViewState() {
+        state.postValue(RegistrationFormState())
     }
 
     sealed class ValidationEvent {
