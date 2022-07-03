@@ -16,7 +16,7 @@ import javax.inject.Singleton
 
 @Singleton
 class RegistrationDataStore @Inject constructor(@ApplicationContext context: Context) {
-    val spec = KeyGenParameterSpec.Builder(
+    private val spec = KeyGenParameterSpec.Builder(
         "_androidx_security_master_key_",
         KeyProperties.PURPOSE_ENCRYPT or KeyProperties.PURPOSE_DECRYPT
     )
@@ -25,7 +25,7 @@ class RegistrationDataStore @Inject constructor(@ApplicationContext context: Con
         .setKeySize(256)
         .build()
 
-    val masterKeyAlias = MasterKey.Builder(context).setKeyGenParameterSpec(spec)
+    private val masterKeyAlias = MasterKey.Builder(context).setKeyGenParameterSpec(spec)
         .build()
 
     private val sharedPreferences = EncryptedSharedPreferences.create(
@@ -37,8 +37,10 @@ class RegistrationDataStore @Inject constructor(@ApplicationContext context: Con
     )
 
     @OptIn(ExperimentalSerializationApi::class)
-    fun getRegistrationData(): RegistrationData {
-        return Json.decodeFromString(sharedPreferences.getString("registration_data_key", "") ?: "")
+    fun getRegistrationData(): RegistrationData? {
+        return if (sharedPreferences.contains("registration_data_key")) {
+            Json.decodeFromString(sharedPreferences.getString("registration_data_key", "") ?: "")
+        } else null
     }
 
     @OptIn(ExperimentalSerializationApi::class)

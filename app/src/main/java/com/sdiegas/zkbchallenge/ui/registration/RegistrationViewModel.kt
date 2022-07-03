@@ -29,6 +29,15 @@ class RegistrationViewModel @Inject constructor(
     private val validationEventChannel = Channel<ValidationEvent>()
     val validationEvents = validationEventChannel.receiveAsFlow()
 
+    init {
+        state.mutation {
+           persistRegistrationData.load()?.let { registrationData ->
+                it.value?.name = registrationData.name
+                it.value?.email = registrationData.email
+            }
+        }
+    }
+
     fun validate() {
         state.value?.let { viewState ->
             val nameResult = validateNameUseCase.execute(viewState.name)
