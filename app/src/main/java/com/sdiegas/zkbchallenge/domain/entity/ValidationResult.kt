@@ -1,4 +1,4 @@
-package com.sdiegas.zkbchallenge.domain.use_cases
+package com.sdiegas.zkbchallenge.domain.entity
 
 data class ValidationResult(
     val successful: Boolean,

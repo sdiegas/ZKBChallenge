@@ -3,9 +3,12 @@ package com.sdiegas.zkbchallenge.ui.registration
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.sdiegas.zkbchallenge.domain.use_cases.ValidateBirthday
-import com.sdiegas.zkbchallenge.domain.use_cases.ValidateEmail
-import com.sdiegas.zkbchallenge.domain.use_cases.ValidateName
+import com.sdiegas.zkbchallenge.data.local.RegistrationData
+import com.sdiegas.zkbchallenge.domain.usecase.PersistRegistrationData
+import com.sdiegas.zkbchallenge.domain.usecase.ValidateBirthday
+import com.sdiegas.zkbchallenge.domain.usecase.ValidateEmail
+import com.sdiegas.zkbchallenge.domain.usecase.ValidateName
+import com.sdiegas.zkbchallenge.util.localDateTimeFormatter
 import com.sdiegas.zkbchallenge.util.mutation
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
@@ -17,7 +20,8 @@ import javax.inject.Inject
 class RegistrationViewModel @Inject constructor(
     private val validateNameUseCase: ValidateName,
     private val validateEmailUseCase: ValidateEmail,
-    private val validateBirthday: ValidateBirthday
+    private val validateBirthday: ValidateBirthday,
+    private val persistRegistrationData: PersistRegistrationData,
     ): ViewModel() {
 
     var state = MutableLiveData(RegistrationFormState())
@@ -46,6 +50,8 @@ class RegistrationViewModel @Inject constructor(
                 }
                 return
             }
+            persistRegistrationData.save(RegistrationData(viewState.name, viewState.email, viewState.birthdayDate.format(
+                localDateTimeFormatter)))
             viewModelScope.launch {
                 validationEventChannel.send(ValidationEvent.Success)
             }
