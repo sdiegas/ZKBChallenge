@@ -11,9 +11,9 @@ import androidx.lifecycle.lifecycleScope
 import androidx.navigation.findNavController
 import com.sdiegas.zkbchallenge.databinding.FragmentRegistrationBinding
 import com.sdiegas.zkbchallenge.util.Constants
-import com.sdiegas.zkbchallenge.util.mutation
 import com.sdiegas.zkbchallenge.util.toConfirmationViewState
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.time.LocalDateTime
 import java.time.ZoneId
@@ -60,7 +60,7 @@ class RegistrationFragment : Fragment() {
 
     private fun showDatePickerDialog() {
         val datePickerDialog = DatePickerDialog(requireContext())
-        registrationViewModel.state.value?.birthdayDate?.let {
+        registrationViewModel.state.value.birthdayDate.let {
             datePickerDialog.updateDate(it.year, it.month.value, it.dayOfMonth)
         }
         datePickerDialog.datePicker.maxDate =
@@ -70,8 +70,10 @@ class RegistrationFragment : Fragment() {
             Constants.LocalDateTimes.minLocalDateTime.atZone(ZoneId.of("Europe/Zurich"))
                 .toInstant().toEpochMilli()
         datePickerDialog.setOnDateSetListener { _, year, month, dayOfMonth ->
-            registrationViewModel.state.mutation {
-                it.value?.birthdayDate = LocalDateTime.of(year, month + 1, dayOfMonth, 0, 0)
+            registrationViewModel.state.update {
+                it.copy(
+                    birthdayDate = LocalDateTime.of(year, month + 1, dayOfMonth, 0, 0)
+                )
             }
         }
         datePickerDialog.show()
@@ -84,7 +86,7 @@ class RegistrationFragment : Fragment() {
                     is RegistrationViewModel.ValidationEvent.Success -> {
                         val action =
                             RegistrationFragmentDirections.actionRegistrationFragmentToConfirmationFragment(
-                                registrationViewModel.state.value?.toConfirmationViewState()
+                                registrationViewModel.state.value.toConfirmationViewState()
                             )
                         registrationViewModel.resetData()
                         view?.findNavController()?.navigate(action)

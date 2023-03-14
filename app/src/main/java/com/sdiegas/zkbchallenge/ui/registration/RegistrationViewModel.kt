@@ -1,6 +1,5 @@
 package com.sdiegas.zkbchallenge.ui.registration
 
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.sdiegas.zkbchallenge.data.local.RegistrationData
@@ -9,10 +8,11 @@ import com.sdiegas.zkbchallenge.domain.usecase.ValidateBirthday
 import com.sdiegas.zkbchallenge.domain.usecase.ValidateEmail
 import com.sdiegas.zkbchallenge.domain.usecase.ValidateName
 import com.sdiegas.zkbchallenge.util.localDateTimeFormatter
-import com.sdiegas.zkbchallenge.util.mutation
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -22,9 +22,9 @@ class RegistrationViewModel @Inject constructor(
     private val validateEmailUseCase: ValidateEmail,
     private val validateBirthday: ValidateBirthday,
     private val persistRegistrationData: PersistRegistrationData,
-    ): ViewModel() {
+) : ViewModel() {
 
-    var state = MutableLiveData(RegistrationFormState())
+    var state = MutableStateFlow(RegistrationFormState())
 
     private val validationEventChannel = Channel<ValidationEvent>()
     val validationEvents = validationEventChannel.receiveAsFlow()
@@ -34,7 +34,7 @@ class RegistrationViewModel @Inject constructor(
     }
 
     fun validate() {
-        state.value?.let { viewState ->
+        state.value.let { viewState ->
             val nameResult = validateNameUseCase.execute(viewState.name)
             val emailResult = validateEmailUseCase.execute(viewState.email)
             val birthdayResult = validateBirthday.execute(viewState.birthdayDate)
@@ -46,36 +46,45 @@ class RegistrationViewModel @Inject constructor(
             ).any { !it.successful }
 
             if (hasError) {
-                state.mutation {
-                    it.value?.nameError = nameResult.errorMessage
-                    it.value?.emailError = emailResult.errorMessage
-                    it.value?.birthdayDateError = birthdayResult.errorMessage
+                state.update {
+                    it.copy(
+                        nameError = nameResult.errorMessage,
+                        emailError = emailResult.errorMessage,
+                        birthdayDateError = birthdayResult.errorMessage
+                    )
                 }
-                return
-            }
-            persistRegistrationData.save(RegistrationData(viewState.name, viewState.email, viewState.birthdayDate.format(
-                localDateTimeFormatter)))
-            viewModelScope.launch {
-                validationEventChannel.send(ValidationEvent.Success)
+            } else {
+                persistRegistrationData.save(
+                    RegistrationData(
+                        viewState.name, viewState.email, viewState.birthdayDate.format(
+                            localDateTimeFormatter
+                        )
+                    )
+                )
+                viewModelScope.launch {
+                    validationEventChannel.send(ValidationEvent.Success)
+                }
             }
         }
     }
 
     fun resetData() {
-        state.postValue(RegistrationFormState())
+        state.value = RegistrationFormState()
     }
 
     private fun loadPersistedData() {
-        state.mutation {
-            persistRegistrationData.load()?.let { registrationData ->
-                it.value?.name = registrationData.name
-                it.value?.email = registrationData.email
+        persistRegistrationData.load()?.let { registrationData ->
+            state.update {
+                it.copy(
+                    name = registrationData.name,
+                    email = registrationData.email
+                )
             }
         }
     }
 
     sealed class ValidationEvent {
-        object Success: ValidationEvent()
+        object Success : ValidationEvent()
     }
 
 }

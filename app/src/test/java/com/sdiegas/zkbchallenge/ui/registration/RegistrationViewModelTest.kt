@@ -3,20 +3,20 @@ package com.sdiegas.zkbchallenge.ui.registration
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import com.sdiegas.zkbchallenge.MainDispatcherRule
 import com.sdiegas.zkbchallenge.data.local.RegistrationData
+import com.sdiegas.zkbchallenge.domain.entity.ValidationResult
+import com.sdiegas.zkbchallenge.domain.usecase.PersistRegistrationData
 import com.sdiegas.zkbchallenge.domain.usecase.ValidateBirthday
 import com.sdiegas.zkbchallenge.domain.usecase.ValidateEmail
 import com.sdiegas.zkbchallenge.domain.usecase.ValidateName
-import com.sdiegas.zkbchallenge.domain.entity.ValidationResult
-import com.sdiegas.zkbchallenge.domain.usecase.PersistRegistrationData
-import com.sdiegas.zkbchallenge.getOrAwaitValue
 import com.sdiegas.zkbchallenge.util.Constants
 import com.sdiegas.zkbchallenge.util.localDateTimeFormatter
-import com.sdiegas.zkbchallenge.util.mutation
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import org.junit.Assert
+import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Before
@@ -25,6 +25,7 @@ import org.junit.Test
 import java.time.LocalDateTime
 import java.time.Month
 
+@OptIn(ExperimentalCoroutinesApi::class)
 class RegistrationViewModelTest {
     private lateinit var validateNameUseCase: ValidateName
     private lateinit var validateEmailUseCase: ValidateEmail
@@ -55,177 +56,182 @@ class RegistrationViewModelTest {
         validateEmailUseCase = mockk()
         validateBirthdayUseCase = mockk()
         persistRegistrationDataUseCase = mockk()
+        every { persistRegistrationDataUseCase.load() } returns null
         viewModel = RegistrationViewModel(validateNameUseCase, validateEmailUseCase, validateBirthdayUseCase, persistRegistrationDataUseCase)
     }
 
     @Test
-    fun test_ReturnValidationResult_OnValidName_LiveDataChanged() {
+    fun test_ReturnValidationResult_OnValidName_LiveDataChanged() = runTest {
         //Given
         every { validateNameUseCase.execute(testNameValid) } returns ValidationResult(true)
         every { validateEmailUseCase.execute(any()) } returns ValidationResult(false)
         every { validateBirthdayUseCase.execute(any()) } returns ValidationResult(false)
         //When
-        viewModel.state.mutation {
-            it.value?.name = testNameValid
+        viewModel.state.update {
+            it.copy(name = testNameValid)
         }
         viewModel.validate()
         //Then
         verify { validateNameUseCase.execute(any()) }
         verify { validateEmailUseCase.execute(any()) }
         verify { validateBirthdayUseCase.execute(any()) }
-        assertEquals(testNameValid, viewModel.state.getOrAwaitValue().name)
-        assertNull(viewModel.state.getOrAwaitValue().nameError)
+        assertEquals(testNameValid, viewModel.state.firstOrNull()?.name)
+        assertNull(viewModel.state.firstOrNull()?.nameError)
     }
 
     @Test
-    fun test_ReturnValidationResult_OnEmptyName_LiveDataChanged() {
+    fun test_ReturnValidationResult_OnEmptyName_LiveDataChanged() = runTest {
         //Given
         every { validateNameUseCase.execute(testNameEmpty) } returns ValidationResult(false, Constants.ErrorMessages.validateNameErrorEmpty)
         every { validateEmailUseCase.execute(any()) } returns ValidationResult(false)
         every { validateBirthdayUseCase.execute(any()) } returns ValidationResult(false)
         //When
-        viewModel.state.mutation {
-            it.value?.name = testNameEmpty
+        viewModel.state.update {
+            it.copy(name = testNameEmpty)
         }
         viewModel.validate()
         //Then
         verify { validateNameUseCase.execute(any()) }
         verify { validateEmailUseCase.execute(any()) }
         verify { validateBirthdayUseCase.execute(any()) }
-        assertEquals(testNameEmpty, viewModel.state.getOrAwaitValue().name)
-        assertEquals(Constants.ErrorMessages.validateNameErrorEmpty, viewModel.state.getOrAwaitValue().nameError)
+        assertEquals(testNameEmpty, viewModel.state.firstOrNull()?.name)
+        assertEquals(Constants.ErrorMessages.validateNameErrorEmpty, viewModel.state.firstOrNull()?.nameError)
     }
 
     @Test
-    fun test_ReturnValidationResult_OnValidEmail_LiveDataChanged() {
+    fun test_ReturnValidationResult_OnValidEmail_LiveDataChanged() = runTest {
         //Given
         every { validateNameUseCase.execute(any()) } returns ValidationResult(false)
         every { validateEmailUseCase.execute(testEmailValid) } returns ValidationResult(true)
         every { validateBirthdayUseCase.execute(any()) } returns ValidationResult(false)
         //When
-        viewModel.state.mutation {
-            it.value?.email = testEmailValid
+        viewModel.state.update {
+            it.copy(email = testEmailValid)
         }
         viewModel.validate()
         //Then
         verify { validateNameUseCase.execute(any()) }
         verify { validateEmailUseCase.execute(any()) }
         verify { validateBirthdayUseCase.execute(any()) }
-        assertEquals(testEmailValid, viewModel.state.getOrAwaitValue().email)
-        assertNull(viewModel.state.getOrAwaitValue().emailError)
+        assertEquals(testEmailValid, viewModel.state.firstOrNull()?.email)
+        assertNull(viewModel.state.firstOrNull()?.emailError)
     }
 
     @Test
-    fun test_ReturnValidationResult_OnEmptyEmail_LiveDataChanged() {
+    fun test_ReturnValidationResult_OnEmptyEmail_LiveDataChanged() = runTest {
         //Given
         every { validateNameUseCase.execute(any()) } returns ValidationResult(false)
         every { validateEmailUseCase.execute(testEmailEmpty) } returns ValidationResult(false, Constants.ErrorMessages.validateEmailErrorEmpty)
         every { validateBirthdayUseCase.execute(any()) } returns ValidationResult(false)
         //When
-        viewModel.state.mutation {
-            it.value?.email = testEmailEmpty
+        viewModel.state.update {
+            it.copy(email = testEmailEmpty)
         }
         viewModel.validate()
         //Then
         verify { validateNameUseCase.execute(any()) }
         verify { validateEmailUseCase.execute(any()) }
         verify { validateBirthdayUseCase.execute(any()) }
-        assertEquals(testEmailEmpty, viewModel.state.getOrAwaitValue().email)
-        assertEquals(Constants.ErrorMessages.validateEmailErrorEmpty, viewModel.state.getOrAwaitValue().emailError)
+        assertEquals(testEmailEmpty, viewModel.state.firstOrNull()?.email)
+        assertEquals(Constants.ErrorMessages.validateEmailErrorEmpty, viewModel.state.firstOrNull()?.emailError)
     }
 
     @Test
-    fun test_ReturnValidationResult_OnInvalidEmail_LiveDataChanged() {
+    fun test_ReturnValidationResult_OnInvalidEmail_LiveDataChanged() = runTest {
         //Given
         every { validateNameUseCase.execute(any()) } returns ValidationResult(false)
         every { validateEmailUseCase.execute(testEmailInvalid) } returns ValidationResult(false, Constants.ErrorMessages.validateEmailErrorInvalid)
         every { validateBirthdayUseCase.execute(any()) } returns ValidationResult(false)
         //When
-        viewModel.state.mutation {
-            it.value?.email = testEmailInvalid
+        viewModel.state.update {
+            it.copy(email = testEmailInvalid)
         }
         viewModel.validate()
         //Then
         verify { validateNameUseCase.execute(any()) }
         verify { validateEmailUseCase.execute(any()) }
         verify { validateBirthdayUseCase.execute(any()) }
-        assertEquals(testEmailInvalid, viewModel.state.getOrAwaitValue().email)
-        assertEquals(Constants.ErrorMessages.validateEmailErrorInvalid, viewModel.state.getOrAwaitValue().emailError)
+        assertEquals(testEmailInvalid, viewModel.state.firstOrNull()?.email)
+        assertEquals(Constants.ErrorMessages.validateEmailErrorInvalid, viewModel.state.firstOrNull()?.emailError)
     }
 
     @Test
-    fun test_ReturnValidationResult_OnValidBirthday_LiveDataChanged() {
+    fun test_ReturnValidationResult_OnValidBirthday_LiveDataChanged() = runTest {
         //Given
         every { validateNameUseCase.execute(any()) } returns ValidationResult(false)
         every { validateEmailUseCase.execute(any()) } returns ValidationResult(false)
         every { validateBirthdayUseCase.execute(testBirthdayValid) } returns ValidationResult(true)
         //When
-        viewModel.state.mutation {
-            it.value?.birthdayDate = testBirthdayValid
+        viewModel.state.update {
+            it.copy(birthdayDate = testBirthdayValid)
         }
         viewModel.validate()
         //Then
         verify { validateNameUseCase.execute(any()) }
         verify { validateEmailUseCase.execute(any()) }
         verify { validateBirthdayUseCase.execute(any()) }
-        assertEquals(testBirthdayValid, viewModel.state.getOrAwaitValue().birthdayDate)
-        assertNull(viewModel.state.getOrAwaitValue().birthdayDateError)
+        assertEquals(testBirthdayValid, viewModel.state.firstOrNull()?.birthdayDate)
+        assertNull(viewModel.state.firstOrNull()?.birthdayDateError)
     }
 
     @Test
-    fun test_ReturnValidationResult_OnInvalidBirthday_LiveDataChanged() {
+    fun test_ReturnValidationResult_OnInvalidBirthday_LiveDataChanged() = runTest {
         //Given
         every { validateNameUseCase.execute(any()) } returns ValidationResult(false)
         every { validateEmailUseCase.execute(any()) } returns ValidationResult(false)
         every { validateBirthdayUseCase.execute(testBirthdayInvalid) } returns ValidationResult(false, Constants.ErrorMessages.validateBirthdayInvalid)
         //When
-        viewModel.state.mutation {
-            it.value?.birthdayDate = testBirthdayInvalid
+        viewModel.state.update {
+            it.copy(birthdayDate = testBirthdayInvalid)
         }
         viewModel.validate()
         //Then
         verify { validateNameUseCase.execute(any()) }
         verify { validateEmailUseCase.execute(any()) }
         verify { validateBirthdayUseCase.execute(any()) }
-        assertEquals(testBirthdayInvalid, viewModel.state.getOrAwaitValue().birthdayDate)
-        assertEquals(Constants.ErrorMessages.validateBirthdayInvalid, viewModel.state.getOrAwaitValue().birthdayDateError)
+        assertEquals(testBirthdayInvalid, viewModel.state.firstOrNull()?.birthdayDate)
+        assertEquals(Constants.ErrorMessages.validateBirthdayInvalid, viewModel.state.firstOrNull()?.birthdayDateError)
     }
 
     @Test
-    fun test_ReturnValidationResult_OnEverythingOK_LiveDataChanged() {
+    fun test_ReturnValidationResult_OnEverythingOK_LiveDataChanged() = runTest {
         //Given
         every { validateNameUseCase.execute(any()) } returns ValidationResult(true)
         every { validateEmailUseCase.execute(any()) } returns ValidationResult(true)
         every { validateBirthdayUseCase.execute(testBirthdayValid) } returns ValidationResult(true)
         every { persistRegistrationDataUseCase.save(testRegistrationData) } returns Unit
         //When
-        viewModel.state.mutation {
-            it.value?.name = testNameValid
-            it.value?.email = testEmailValid
-            it.value?.birthdayDate = testBirthdayValid
+        viewModel.state.update {
+            it.copy(
+                name = testNameValid,
+                email = testEmailValid,
+                birthdayDate = testBirthdayValid
+            )
         }
         viewModel.validate()
         //Then
         verify { validateNameUseCase.execute(any()) }
         verify { validateEmailUseCase.execute(any()) }
         verify { validateBirthdayUseCase.execute(any()) }
-        assertNull(viewModel.state.getOrAwaitValue().nameError)
-        assertNull(viewModel.state.getOrAwaitValue().emailError)
-        assertNull(viewModel.state.getOrAwaitValue().birthdayDateError)
+        assertNull(viewModel.state.firstOrNull()?.nameError)
+        assertNull(viewModel.state.firstOrNull()?.emailError)
+        assertNull(viewModel.state.firstOrNull()?.birthdayDateError)
     }
 
     @Test
-    fun test_PersistRegistrationData_OnEverythingOK_LiveDataChanged() {
+    fun test_PersistRegistrationData_OnEverythingOK_LiveDataChanged() = runTest {
         //Given
         every { validateNameUseCase.execute(any()) } returns ValidationResult(true)
         every { validateEmailUseCase.execute(any()) } returns ValidationResult(true)
         every { validateBirthdayUseCase.execute(testBirthdayValid) } returns ValidationResult(true)
         every { persistRegistrationDataUseCase.save(testRegistrationData) } returns Unit
         //When
-        viewModel.state.mutation {
-            it.value?.name = testNameValid
-            it.value?.email = testEmailValid
-            it.value?.birthdayDate = testBirthdayValid
+        viewModel.state.update {
+            it.copy(
+                name = testNameValid,
+                email = testEmailValid,
+                birthdayDate = testBirthdayValid
+            )
         }
         viewModel.validate()
         //Then
@@ -233,10 +239,8 @@ class RegistrationViewModelTest {
         verify { validateEmailUseCase.execute(any()) }
         verify { validateBirthdayUseCase.execute(any()) }
         verify { persistRegistrationDataUseCase.save(testRegistrationData) }
-        assertNull(viewModel.state.getOrAwaitValue().nameError)
-        assertNull(viewModel.state.getOrAwaitValue().emailError)
-        assertNull(viewModel.state.getOrAwaitValue().birthdayDateError)
+        assertNull(viewModel.state.firstOrNull()?.nameError)
+        assertNull(viewModel.state.firstOrNull()?.emailError)
+        assertNull(viewModel.state.firstOrNull()?.birthdayDateError)
     }
-
-
 }
